@@ -25,7 +25,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Button start = (Button) findViewById(R.id.start);
+
         AMSHookUtil.hookStartActivity(OtherActivity.class,HostActivity.class);
+
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

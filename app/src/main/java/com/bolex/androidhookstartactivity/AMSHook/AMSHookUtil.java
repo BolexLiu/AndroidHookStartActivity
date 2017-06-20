@@ -48,7 +48,7 @@ public class AMSHookUtil {
     }
 
     /**
-     * hook handle 在这里我们需要替换我们未被注册的Activity
+     * hook ActivityThread  handle 在这里我们需要替换我们未被注册的Activity Intent
      *
      * @throws Exception
      */
