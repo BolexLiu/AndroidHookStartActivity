@@ -2,7 +2,7 @@
 
 ## AMSHook
 
-两行代码实现不注册Activity启动，只需要注册一下！
+两行代码实现动态启动未注册的Activity。
 
 
 1.application标签里配置一个壳Activity 
