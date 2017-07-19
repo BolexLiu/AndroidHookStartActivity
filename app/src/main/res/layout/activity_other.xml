@@ -10,6 +10,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.bolex.androidhookstartactivity.OtherActivity">
     <TextView
+        android:id="@+id/btn"
         android:text="我是一个未被注册的Activity"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

@@ -2,20 +2,21 @@ package com.bolex.androidhookstartactivity.AMSHook;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.util.Log;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 public class HookInvocationHandler implements InvocationHandler {
 
-    Object mAmsObj;
-    Class<?> mProxyActivity;
-    Class<?> mOriginallyActivity;
+    private Object mAmsObj;
+    private String mPackageName;
+    private String cls;
 
-    public HookInvocationHandler(Object amsObj, Class<?> proxyActivity, Class<?> originallyActivity) {
+    public HookInvocationHandler(Object amsObj, String packageName, String cls) {
         this.mAmsObj = amsObj;
-        this.mProxyActivity = proxyActivity;
-        this.mOriginallyActivity = originallyActivity;
+        this.mPackageName = packageName;
+        this.cls = cls;
     }
 
     @Override
@@ -30,13 +31,15 @@ public class HookInvocationHandler implements InvocationHandler {
                     break;
                 }
             }
+
+
             // TODO: 2017/6/20 取出在真实的Intent
             Intent originallyIntent = (Intent) args[index];
+            Log.i("AMSHookUtil","HookInvocationHandler:" + originallyIntent.getComponent().getClassName());
             // TODO: 2017/6/20  自己伪造一个配置文件已注册过的Activity Intent
             Intent proxyIntent = new Intent();
             // TODO: 2017/6/20   因为我们调用的Activity没有注册，所以这里我们先偷偷换成已注册。使用一个假的Intent
-            String PackageName = mProxyActivity.getPackage().getName();
-            ComponentName componentName = new ComponentName(PackageName, mOriginallyActivity.getName());
+            ComponentName componentName = new ComponentName(mPackageName, cls);
             proxyIntent.setComponent(componentName);
             // TODO: 2017/6/20 在这里把未注册的Intent先存起来 一会儿我们需要在Handle里取出来用
             proxyIntent.putExtra("originallyIntent", originallyIntent);
