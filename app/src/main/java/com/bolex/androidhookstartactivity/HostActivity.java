@@ -1,8 +1,9 @@
 package com.bolex.androidhookstartactivity;
 
-import android.app.Activity;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+
+import com.bolex.androidhookstartactivity.R;
 
 public class HostActivity extends AppCompatActivity {
 

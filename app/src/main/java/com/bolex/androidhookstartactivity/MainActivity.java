@@ -1,22 +1,12 @@
 package com.bolex.androidhookstartactivity;
 
-import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
 import com.bolex.androidhookstartactivity.AMSHook.AMSHookUtil;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,8 +16,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Button start = (Button) findViewById(R.id.start);
 
-        AMSHookUtil.hookStartActivity(OtherActivity.class,HostActivity.class);
-
+        AMSHookUtil.hookStartActivity(this);
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

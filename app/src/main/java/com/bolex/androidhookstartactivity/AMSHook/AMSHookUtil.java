@@ -1,13 +1,15 @@
 package com.bolex.androidhookstartactivity.AMSHook;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Message;
-
-import com.bolex.androidhookstartactivity.HostActivity;
-import com.bolex.androidhookstartactivity.MainActivity;
-import com.bolex.androidhookstartactivity.OtherActivity;
+import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -20,26 +22,51 @@ import java.lang.reflect.Proxy;
 
 public class AMSHookUtil {
 
+    @SuppressLint("StaticFieldLeak")
+    private static Context sContext;
+    private static String sPackageName;
+    private static String sHostClazzName;
+    private static final String TAG = "AMSHookUtil";
 
     /**
      *   * 这里我们通过反射获取到AMS的代理本地代理对象
      * Hook以后动态串改Intent为已注册的来躲避检测
-     * @param proxyActivity      未被注册的Activity
-     * @param originallyActivity 空壳Activity
+     * @param context            上下文
      */
-    public static void hookStartActivity(Class<?> proxyActivity, Class<?> originallyActivity) {
+    public static void hookStartActivity(Context context) {
+        if (context == null || sContext != null) {
+            return;
+        }
+
         try {
+            Context applicationContext = context.getApplicationContext();
+            sContext = applicationContext;
+            PackageManager manager = applicationContext.getPackageManager();
+            sPackageName = applicationContext.getPackageName();
+            PackageInfo packageInfo = manager.getPackageInfo(sPackageName, PackageManager.GET_ACTIVITIES);
+            ActivityInfo[] activities = packageInfo.activities;
+            if (activities == null || activities.length == 0) {
+                return;
+            }
+
+            ActivityInfo activityInfo = activities[0];
+            sHostClazzName = activityInfo.name;
+
+            Log.e(TAG,"pkgName:" + sPackageName + "\tHostClazzName:" + sHostClazzName);
+
             Class<?> amnClazz = Class.forName("android.app.ActivityManagerNative");
             Field defaultField = amnClazz.getDeclaredField("gDefault");
             defaultField.setAccessible(true);
             Object gDefaultObj = defaultField.get(null); //所有静态对象的反射可以通过传null获取。如果是实列必须传实例
+
             Class<?> singletonClazz = Class.forName("android.util.Singleton");
             Field amsField = singletonClazz.getDeclaredField("mInstance");
             amsField.setAccessible(true);
             Object amsObj = amsField.get(gDefaultObj);
-            amsObj = Proxy.newProxyInstance(MainActivity.class.getClass().getClassLoader(),
+
+            amsObj = Proxy.newProxyInstance(context.getClass().getClassLoader(),
                     amsObj.getClass().getInterfaces(),
-                    new HookInvocationHandler(amsObj, proxyActivity, originallyActivity));
+                    new HookInvocationHandler(amsObj, sPackageName, sHostClazzName));
             amsField.set(gDefaultObj, amsObj);
             hookLaunchActivity();
         } catch (Exception e) {
@@ -52,7 +79,7 @@ public class AMSHookUtil {
      *
      * @throws Exception
      */
-    public static void hookLaunchActivity() throws Exception {
+    private static void hookLaunchActivity() throws Exception {
         Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
         Field sCurrentActivityThreadField = activityThreadClazz.getDeclaredField("sCurrentActivityThread");
         sCurrentActivityThreadField.setAccessible(true);
@@ -65,7 +92,7 @@ public class AMSHookUtil {
         callBackField.set(mH, new ActivityThreadHandlerCallBack());
     }
 
-    static class ActivityThreadHandlerCallBack implements Handler.Callback {
+    private static class ActivityThreadHandlerCallBack implements Handler.Callback {
 
         @Override
         public boolean handleMessage(Message msg) {
@@ -83,7 +110,7 @@ public class AMSHookUtil {
         }
     }
 
-    public static void handleLaunchActivity(Message msg) {
+    private static void handleLaunchActivity(Message msg) {
         try {
             Object obj = msg.obj;
             Field intentField = obj.getClass().getDeclaredField("intent");
@@ -91,7 +118,14 @@ public class AMSHookUtil {
             Intent proxyIntent = (Intent) intentField.get(obj);
             //拿到之前真实要被启动的Intent 然后把Intent换掉
             Intent originallyIntent = proxyIntent.getParcelableExtra("originallyIntent");
+            if (originallyIntent == null) {
+                return;
+            }
+
             proxyIntent.setComponent(originallyIntent.getComponent());
+
+
+            Log.e(TAG,"handleLaunchActivity:" + originallyIntent.getComponent().getClassName());
 
             //todo:兼容AppCompatActivity
             Class<?> forName = Class.forName("android.app.ActivityThread");
@@ -117,14 +151,14 @@ public class AMSHookUtil {
     private static class PackageManagerHandler implements InvocationHandler {
         private Object mActivityManagerObject;
 
-        public PackageManagerHandler(Object mActivityManagerObject) {
+        PackageManagerHandler(Object mActivityManagerObject) {
             this.mActivityManagerObject = mActivityManagerObject;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             if (method.getName().equals("getActivityInfo")) {
-                ComponentName componentName = new ComponentName(OtherActivity.class.getPackage().getName(), HostActivity.class.getName());
+                ComponentName componentName = new ComponentName(sPackageName, sHostClazzName);
                 args[0] = componentName;
             }
             return method.invoke(mActivityManagerObject, args);
