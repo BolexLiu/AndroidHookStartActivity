@@ -10,9 +10,9 @@
         <activity android:name=".HostActivity" />
 ```
 
-2.注册一下你需要启动的Activity ,和壳容器。OtherActivity是你未注册的要启动的Activity,HostActivity是你注册过的壳容器。
+2.注册一下其中this为context
 ```
-  AMSHookUtil.hookStartActivity(OtherActivity.class,HostActivity.class); 
+      AMSHookUtil.hookStartActivity(this);
 ```
 
 3.以后就可以按照标准的Intent启动为那些未被注册的Activity。
@@ -22,5 +22,10 @@
 ```
 
 原理详解：http://www.jianshu.com/p/2ad105f54d07
+
+
+## 跟新
+1.修复多次hook的问题
+2.修复Activity无需和包名一致也能启动
 
 

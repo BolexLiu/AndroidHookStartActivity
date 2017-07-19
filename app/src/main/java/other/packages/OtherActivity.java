@@ -1,9 +1,12 @@
-package com.bolex.androidhookstartactivity;
+package other.packages;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
+import com.bolex.androidhookstartactivity.MainActivity;
+import com.bolex.androidhookstartactivity.R;
 
 public class OtherActivity extends AppCompatActivity {
 

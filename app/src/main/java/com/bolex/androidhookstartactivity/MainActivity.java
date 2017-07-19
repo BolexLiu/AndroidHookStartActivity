@@ -8,6 +8,8 @@ import android.widget.Button;
 
 import com.bolex.androidhookstartactivity.AMSHook.AMSHookUtil;
 
+import other.packages.OtherActivity;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override

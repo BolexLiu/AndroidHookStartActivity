@@ -37,7 +37,6 @@ public class AMSHookUtil {
         if (context == null || sContext != null) {
             return;
         }
-
         try {
             Context applicationContext = context.getApplicationContext();
             sContext = applicationContext;
@@ -48,17 +47,14 @@ public class AMSHookUtil {
             if (activities == null || activities.length == 0) {
                 return;
             }
-
             ActivityInfo activityInfo = activities[0];
             sHostClazzName = activityInfo.name;
-
             Log.e(TAG,"pkgName:" + sPackageName + "\tHostClazzName:" + sHostClazzName);
 
             Class<?> amnClazz = Class.forName("android.app.ActivityManagerNative");
             Field defaultField = amnClazz.getDeclaredField("gDefault");
             defaultField.setAccessible(true);
             Object gDefaultObj = defaultField.get(null); //所有静态对象的反射可以通过传null获取。如果是实列必须传实例
-
             Class<?> singletonClazz = Class.forName("android.util.Singleton");
             Field amsField = singletonClazz.getDeclaredField("mInstance");
             amsField.setAccessible(true);
