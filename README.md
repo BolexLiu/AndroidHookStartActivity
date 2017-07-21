@@ -24,7 +24,7 @@
 原理详解：http://www.jianshu.com/p/2ad105f54d07
 
 
-## 跟新
+## 更新
 
 - 1.修复多次hook的问题
 - 2.修复Activity无需和包名一致也能启动
